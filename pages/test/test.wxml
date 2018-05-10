@@ -1,0 +1,22 @@
+<button bindtap="getBluetoothAdapterState">获取本机蓝牙适配器状态</button>
+<button bindtap="startBluetoothDevicesDiscovery">开始搜寻附近的蓝牙外围设备</button>
+<button bindtap="stopBluetoothDevicesDiscovery">停止搜寻附近的蓝牙外围设备</button>
+<button bindtap="getConnectedBluetoothDevices">获取本机已配对的蓝牙设备</button>
+<button bindtap="getBluetoothDevices">获取在小程序蓝牙模块生效期间所有已发现的蓝牙设备</button>
+
+<view class='center-flex'>蓝牙列表</view>
+<view class='list-box'>
+  <view 
+    class='list-item' 
+    wx:for="{{list}}" 
+    wx:key="l"
+    data-device-Id="{{item.deviceId}}"
+    bindtap='connect'
+    >{{item.name}}</view>
+</view>
+
+<view class='center-flex'>发送数据</view>
+<view class='send-box'>
+  <input class='send-input' type='number'></input>
+  <view class='send-btn'>发送</view>
+</view>

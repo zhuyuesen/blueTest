@@ -1,0 +1,46 @@
+page{
+	font-size: 28rpx;
+}
+
+button{
+  margin-bottom: 20rpx;
+  height: 70rpx;
+  font-size: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.center-flex{
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.list-item{
+	height: 80rpx;
+	border: 1px solid #eee;
+	border-left: none;
+	border-right: none;
+	box-sizing: border-box;
+	align-items: center;
+	padding: 0 30rpx;
+	margin-bottom: 20rpx;
+}
+
+.send-box{
+	display: flex;
+	align-items: center;
+	height: 80rpx;
+}
+.send-input{
+	width: 70%;
+	border: 1px solid #f0f0f0;
+	border-radius: 5rpx;
+	box-sizing: border-box;
+}
+
+.send-btn{
+	width: 30%;
+	text-align: center;
+}
