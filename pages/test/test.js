@@ -89,7 +89,7 @@ Page({
     })
   },
 
-  //获取本机已配对的蓝牙设备
+  //获取本机已配对的蓝牙设备  根据 uuid 获取处于已连接状态的设备
   getConnectedBluetoothDevices:function(e){
     wx.getConnectedBluetoothDevices({
       success: function (res) {
@@ -121,13 +121,33 @@ Page({
       // 这里的 deviceId 需要已经通过 createBLEConnection 与对应设备建立链接 
       deviceId: deviceId,
       success: function (res) {
-        console.log(res)
+        console.log("连接蓝牙 suc -->",res)
       },
       fail:function(res){
         console.log("连接失败 -->", res)
       }
     })
   },
+
+  // 获取蓝牙设备所有 service（服务）
+  getBLEDeviceServices:function(e){
+    let that = this;
+    let deviceId = e.currentTarget.dataset.deviceId;
+    wx.getBLEDeviceServices({
+      // 这里的 deviceId 需要已经通过 createBLEConnection 与对应设备建立链接 
+      deviceId: deviceId,
+      success: function (res) {
+        console.log('device services:', res.services)
+      }
+    })
+  },
+
+    // 向低功耗蓝牙设备特征值中写入二进制数据。
+    writeBLECharacteristicValue:function(e){
+      let that = this;
+      
+    },
+
 
   /**
    * 生命周期函数--监听页面加载

@@ -12,7 +12,8 @@
     wx:key="l"
     data-device-Id="{{item.deviceId}}"
     bindtap='connect'
-    >{{item.name}}</view>
+    >{{item.name}}
+   </view>
 </view>
 
 <view class='center-flex'>发送数据</view>
