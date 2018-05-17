@@ -274,7 +274,17 @@ Page({
       wx.onBLECharacteristicValueChange(function(res) {
         console.log("监听低功耗蓝牙设备的特征值变化 res -->",res)
         console.log(`characteristic ${res.characteristicId} has changed, now is ${res.value}`)
-        console.log(ab2hex(res.value))
+        console.log(ab2hex(res.value))  //如串口助手发送的是16进制数据，这里能够正确的打印出来
+
+        let buffer = res.value
+        let dataView = new DataView(buffer)
+        console.log("接收字节长度:" + dataView.byteLength)
+        var str = ""
+        for (var i = 0; i < dataView.byteLength; i++) {
+          str += String.fromCharCode(dataView.getUint8(i))
+        }
+        console.log("接收到数据 -->",str)  //若串口助手发送的是10进制数据  这里能够正确的打印出来
+
       })
     },
 
