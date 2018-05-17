@@ -16,7 +16,20 @@ Page({
    * 页面的初始数据
    */
   data: {
-    list:[]
+    list:[
+      // {
+      //   deviceId:"85A46C4E-C682-4C45-A820-5419D7C59835",
+      //   advertisServiceUUIDs: ["0000FFF0-0000-1000-8000-00805F9B34FB"],
+      //   localName: "HC-08",
+      //   name:"HC-08",
+      //   advertisData: "",  //ArrayBuffer
+      //   RSSI:-38,
+      // }
+    ],
+
+    deviceId: "", //已连接设备的 deviceId
+    services: [],  //已连接设备的 所有 service（服务）{isPrimary:true,uuid:"0000180A-0000-1000-8000-00805F9B34FB"}
+    characteristics:[], //已连接设备某个服务中的所有 characteristic（特征值）properties:{notify: false, write: false, indicate: false, read: true},uuid:"00002A23-0000-1000-8000-00805F9B34FB"
   },
   
   //初始化小程序蓝牙模块
@@ -49,6 +62,7 @@ Page({
     let that = this;
     wx.startBluetoothDevicesDiscovery({
       services: ['FFF0', 'FFF1', 'FFF2', 'FFF3', 'FFF4', 'FFF5'],
+      // services: ['FFE0'],
       interval: "2000", //每一秒获取一次数据
       allowDuplicatesKey: true,
       success: function (res) {
@@ -122,12 +136,39 @@ Page({
       deviceId: deviceId,
       success: function (res) {
         console.log("连接蓝牙 suc -->",res)
+        that.setData({
+          deviceId:deviceId
+        })
       },
       fail:function(res){
         console.log("连接失败 -->", res)
       }
     })
   },
+
+  // 获取蓝牙设备某个服务中的所有 characteristic（特征值）
+  getBLEDeviceCharacteristics:function(e){
+    let that = this;
+    let deviceId = that.data.deviceId;
+    let serviceId = that.data.services[2].uuid;
+    wx.getBLEDeviceCharacteristics({
+      // 这里的 deviceId 需要已经通过 createBLEConnection 与对应设备建立链接
+      deviceId: deviceId,
+      // 这里的 serviceId 需要在上面的 getBLEDeviceServices 接口中获取
+      serviceId: serviceId,
+      success: function (res) {
+        console.log('获取蓝牙设备某个服务中的所有 characteristic（特征值）: res', res)
+        console.log('获取蓝牙设备某个服务中的所有 characteristic（特征值）: res.characteristics', res.characteristics);
+        that.setData({
+          characteristics:res.characteristics
+        })
+      },
+      fail:function(res){
+        console.log('获取蓝牙设备某个服务中的所有 characteristic（特征值）: fail', res)
+      }
+    })
+  },
+
 
   // 获取蓝牙设备所有 service（服务）
   getBLEDeviceServices:function(e){
@@ -137,15 +178,104 @@ Page({
       // 这里的 deviceId 需要已经通过 createBLEConnection 与对应设备建立链接 
       deviceId: deviceId,
       success: function (res) {
+        console.log('获取蓝牙设备所有 service（服务）:', res)
         console.log('device services:', res.services)
+        that.setData({
+          services:res.services
+        })
       }
+    })
+  },
+
+
+  //保存输入值
+  saveInput:function(e){
+    let value = e.detail.value;
+    this.setData({
+      sendValue:value
     })
   },
 
     // 向低功耗蓝牙设备特征值中写入二进制数据。
     writeBLECharacteristicValue:function(e){
       let that = this;
+      let value = that.data.sendValue;
+      let deviceId = that.data.deviceId;
+      let serviceId = that.data.services[2].uuid;
+      let characteristicId =  that.data.characteristics[0].uuid;
+
+      console.log("deviceId-->",deviceId)
+      console.log("serviceId-->",serviceId)
+      console.log("characteristicId-->",characteristicId)
+
+      // 向蓝牙设备发送一个0x00的16进制数据
+      // let buffer = new ArrayBuffer(1)
+      let buffer = new ArrayBuffer(1)
+      let dataView = new DataView(buffer)
+      //写入内存
+      //第一个参数是字节序号，表示从哪个字节开始写入，
+      //第二个参数为写入的数据。对于那些写入两个或两个以上字节的方法，
+      //需要指定第三个参数，false或者undefined表示使用大端字节序写入，true表示使用小端字节序写入。
+      dataView.setUint8(0,value)
+
+      wx.writeBLECharacteristicValue({
+        // 这里的 deviceId 需要在上面的 getBluetoothDevices 或 onBluetoothDeviceFound 接口中获取
+        deviceId: deviceId,
+        // 这里的 serviceId 需要在上面的 getBLEDeviceServices 接口中获取
+        serviceId: serviceId,
+        // 这里的 characteristicId 需要在上面的 getBLEDeviceCharacteristics 接口中获取
+        characteristicId: characteristicId,
+        // 这里的value是ArrayBuffer类型
+        value: buffer,
+        success: function (res) {
+          console.log('向低功耗蓝牙设备特征值中写入二进制数据 suc-->', res)
+        },
+        fail:function(res){
+          console.log("发送数据失败 -->",res);
+        }
+      })
+
+    },
+
+
+    //启用低功耗蓝牙设备特征值变化时的 notify 功能，订阅特征值。
+    //注意：必须设备的特征值支持notify或者indicate才可以成功调用，具体参照 characteristic 的 properties 属性
+    //另外，必须先启用notify才能监听到设备 characteristicValueChange 事件
+    notifyBLECharacteristicValueChange:function(e){
+      let that = this;
+
+      let deviceId = that.data.deviceId;
+      let serviceId = that.data.services[2].uuid;
+      let characteristicId =  that.data.characteristics[0].uuid;
+
+      wx.notifyBLECharacteristicValueChange({
+        state: true, // 启用 notify 功能
+        // 这里的 deviceId 需要已经通过 createBLEConnection 与对应设备建立链接  
+        deviceId: deviceId,
+        // 这里的 serviceId 需要在上面的 getBLEDeviceServices 接口中获取
+        serviceId: serviceId,
+        // 这里的 characteristicId 需要在上面的 getBLEDeviceCharacteristics 接口中获取
+        characteristicId: characteristicId,
+        success: function (res) {
+          console.log('启用低功耗蓝牙设备特征值变化时的 notify 功能，订阅特征值 success', res.errMsg)
+        },
+        fail:function(res){
+          console.log("启用低功耗蓝牙设备特征值变化时的 notify 功能，订阅特征值 fail",res);
+        }
+      })
+    },
+
+
+    //监听低功耗蓝牙设备的特征值变化。必须先启用notify接口才能接收到设备推送的notification。
+    onBLECharacteristicValueChange:function(e){
+      console.log("jieshouzhi")
+      // ArrayBuffer转16进度字符串示例
       
+      wx.onBLECharacteristicValueChange(function(res) {
+        console.log("监听低功耗蓝牙设备的特征值变化 res -->",res)
+        console.log(`characteristic ${res.characteristicId} has changed, now is ${res.value}`)
+        console.log(ab2hex(res.value))
+      })
     },
 
 

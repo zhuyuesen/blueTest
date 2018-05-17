@@ -26,6 +26,8 @@ button{
 	align-items: center;
 	padding: 0 30rpx;
 	margin-bottom: 20rpx;
+	display: flex;
+	justify-content: space-between;
 }
 
 .send-box{

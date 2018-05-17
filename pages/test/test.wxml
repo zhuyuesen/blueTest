@@ -7,17 +7,33 @@
 <view class='center-flex'>蓝牙列表</view>
 <view class='list-box'>
   <view 
-    class='list-item' 
+    class='list-item'
     wx:for="{{list}}" 
     wx:key="l"
-    data-device-Id="{{item.deviceId}}"
-    bindtap='connect'
+  >
+    <text 
+      class='ly-name' 
+      data-device-Id="{{item.deviceId}}"
+      bindtap='connect'
     >{{item.name}}
-   </view>
+    </text>
+    <text 
+      class='label' 
+      data-value="{{item}}" 
+      bindtap="getBLEDeviceServices"
+      data-device-Id="{{item.deviceId}}"
+    >获取设备特征值</text>
+  </view>
 </view>
+
+<button bindtap="getBLEDeviceCharacteristics">获取蓝牙设备某个服务中的所有 characteristic（特征值</button>
 
 <view class='center-flex'>发送数据</view>
 <view class='send-box'>
-  <input class='send-input' type='number'></input>
-  <view class='send-btn'>发送</view>
+  <input class='send-input' type='number' bindinput="saveInput"></input>
+  <view class='send-btn' bindtap="writeBLECharacteristicValue">发送</view>
 </view>
+
+<button bindtap="notifyBLECharacteristicValueChange">启用低功耗蓝牙设备特征值变化时的 notify 功能，订阅特征值。</button>
+
+<button bindtap="onBLECharacteristicValueChange">监听低功耗蓝牙设备的特征值变化。必须先启用notify接口才能接收到设备推送的notification。</button>
