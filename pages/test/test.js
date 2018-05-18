@@ -196,6 +196,14 @@ Page({
     })
   },
 
+    //保存输入值
+  saveInput:function(e){
+    let value = e.detail.value;
+    this.setData({
+      sendValue2:value
+    })
+  },
+
     // 向低功耗蓝牙设备特征值中写入二进制数据。
     writeBLECharacteristicValue:function(e){
       let that = this;
@@ -276,6 +284,57 @@ Page({
         console.log(`characteristic ${res.characteristicId} has changed, now is ${res.value}`)
         console.log(ab2hex(res.value))
       })
+    },
+
+
+    // 向低功耗蓝牙设备特征值中写入二进制数据。2
+    writeBLECharacteristicValue2:function(e){
+      let that = this;
+      let value = that.data.sendValue;
+      let deviceId = that.data.deviceId;
+      let serviceId = that.data.services[2].uuid;
+      let characteristicId =  that.data.characteristics[0].uuid;
+
+      console.log("deviceId-->",deviceId)
+      console.log("serviceId-->",serviceId)
+      console.log("characteristicId-->",characteristicId)
+
+     let time = new Date("2018-04-18 21:06:34")
+     let src = time.getTime();
+     src = parseInt(src/1000);
+
+      let buffer = new ArrayBuffer(20)
+      let dataView = new DataView(buffer)
+      dataView.setUint8(0,0xa1);
+      dataView.setUint8(1,0x8);
+      let uuuid = '78564312'+src;
+      for (var i = 0; i < uuuid.length; i++) {
+        dataView.setUint8(i+2, uuuid.charAt(i).charCodeAt())
+      }
+
+      //写入内存
+      //第一个参数是字节序号，表示从哪个字节开始写入，
+      //第二个参数为写入的数据。对于那些写入两个或两个以上字节的方法，
+      //需要指定第三个参数，false或者undefined表示使用大端字节序写入，true表示使用小端字节序写入。
+      // dataView.setUint8(0,value)
+
+      wx.writeBLECharacteristicValue({
+        // 这里的 deviceId 需要在上面的 getBluetoothDevices 或 onBluetoothDeviceFound 接口中获取
+        deviceId: deviceId,
+        // 这里的 serviceId 需要在上面的 getBLEDeviceServices 接口中获取
+        serviceId: serviceId,
+        // 这里的 characteristicId 需要在上面的 getBLEDeviceCharacteristics 接口中获取
+        characteristicId: characteristicId,
+        // 这里的value是ArrayBuffer类型
+        value: buffer,
+        success: function (res) {
+          console.log('向低功耗蓝牙设备特征值中写入二进制数据 suc-->', res)
+        },
+        fail:function(res){
+          console.log("发送数据失败 -->",res);
+        }
+      })
+
     },
 
 
